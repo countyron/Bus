@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raglan St — Next Bus</title>
+<style>
+  :root{
+    --ink:#0e2230;
+    --ink-soft:#3c5566;
+    --paper:#f6f4ee;
+    --line:#d8d2c2;
+    --harbour:#1b5c6b;
+    --harbour-deep:#103e4a;
+    --amber:#c97c2e;
+    --good:#1e7a4c;
+    --warn:#b3461f;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Iowan Old Style","Georgia",serif;
+    min-height:100vh;
+    padding:0 0 40px;
+  }
+  header{
+    background:linear-gradient(160deg,var(--harbour) 0%,var(--harbour-deep) 100%);
+    color:#eef5f3;
+    padding:28px 20px 22px;
+    border-bottom:3px solid var(--amber);
+  }
+  header .eyebrow{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    opacity:.75;
+    margin:0 0 6px;
+  }
+  header h1{
+    margin:0;
+    font-size:26px;
+    font-weight:600;
+    line-height:1.15;
+  }
+  header .sub{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:13px;
+    opacity:.82;
+    margin-top:6px;
+  }
+
+  main{
+    max-width:560px;
+    margin:0 auto;
+    padding:18px 16px 0;
+  }
+
+  .keycard{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px 16px;
+    margin-bottom:18px;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+  }
+  .keycard label{
+    display:block;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .keyrow{display:flex;gap:8px;}
+  .keyrow input{
+    flex:1;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    font-size:14px;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    background:#fbfaf6;
+  }
+  .keyrow button{
+    padding:10px 16px;
+    border:none;
+    border-radius:7px;
+    background:var(--harbour);
+    color:#fff;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+  }
+  .keyrow button:active{background:var(--harbour-deep);}
+  .keynote{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:8px;
+    line-height:1.4;
+  }
+  .keynote a{color:var(--harbour);}
+
+  .status-line{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+    padding:0 2px;
+  }
+  .status-line button{
+    background:none;
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:5px 12px;
+    font-size:12px;
+    color:var(--ink);
+    cursor:pointer;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+  }
+  .dot{
+    display:inline-block;
+    width:7px;height:7px;
+    border-radius:50%;
+    background:var(--good);
+    margin-right:6px;
+    position:relative;
+    top:-1px;
+  }
+  .dot.stale{background:var(--amber);}
+  .dot.err{background:var(--warn);}
+
+  .stop-banner{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    background:#eee9da;
+    border-radius:8px;
+    padding:9px 13px;
+    margin-bottom:14px;
+    line-height:1.45;
+  }
+  .stop-banner b{color:var(--ink);}
+
+  .arrivals{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .arrival{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-left:5px solid var(--harbour);
+    border-radius:9px;
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .arrival.imminent{border-left-color:var(--warn);}
+  .arrival.soon{border-left-color:var(--amber);}
+
+  .route-block{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+  }
+  .route-num{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-weight:700;
+    font-size:18px;
+    background:var(--ink);
+    color:#fff;
+    border-radius:6px;
+    padding:6px 10px;
+    min-width:34px;
+    text-align:center;
+    flex-shrink:0;
+  }
+  .route-dest{
+    font-size:15px;
+    line-height:1.25;
+    min-width:0;
+  }
+  .route-dest .label{
+    display:block;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:10.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:2px;
+  }
+
+  .eta{
+    text-align:right;
+    flex-shrink:0;
+  }
+  .eta .mins{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-weight:700;
+    font-size:22px;
+    color:var(--harbour-deep);
+  }
+  .arrival.imminent .eta .mins{color:var(--warn);}
+  .arrival.soon .eta .mins{color:var(--amber);}
+  .eta .clock{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:11.5px;
+    color:var(--ink-soft);
+  }
+
+  .empty, .loading, .error-box{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    text-align:center;
+    padding:34px 16px;
+    color:var(--ink-soft);
+    font-size:14px;
+    line-height:1.5;
+  }
+  .error-box{color:var(--warn);}
+  .error-box code{
+    display:block;
+    margin-top:8px;
+    font-size:11px;
+    background:#f3ece4;
+    padding:8px 10px;
+    border-radius:6px;
+    word-break:break-all;
+    color:var(--ink-soft);
+  }
+
+  footer{
+    max-width:560px;
+    margin:24px auto 0;
+    padding:0 16px;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:11px;
+    color:var(--ink-soft);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Mosman · Northern Beaches direction</p>
+  <h1>Raglan St opp Esther Rd</h1>
+  <p class="sub">Routes 100 · 114 · 238 — live departures</p>
+</header>
+
+<main>
+
+  <div class="keycard" id="keycard">
+    <label for="workerurl">Worker proxy URL</label>
+    <div class="keyrow">
+      <input type="text" id="workerurl" placeholder="https://raglan-bus.yourname.workers.dev">
+      <button id="saveurl">Save</button>
+    </div>
+    <p class="keynote">
+      This is your Cloudflare Worker URL, set up to hold your TfNSW key securely server-side.
+      See the setup guide alongside this file if you haven't deployed the Worker yet.
+    </p>
+  </div>
+
+  <div class="status-line">
+    <span><span class="dot" id="statusDot"></span><span id="statusText">Not connected</span></span>
+    <button id="refreshBtn">Refresh</button>
+  </div>
+
+  <div class="stop-banner">
+    Tracking <b>Raglan St opp Esther Rd</b>, Mosman. If your stop ID differs slightly from the auto-match, set it manually below the results once you see what's loading.
+  </div>
+
+  <div class="arrivals" id="arrivals">
+    <div class="loading">Add your API key above, then tap Refresh to load live departures.</div>
+  </div>
+
+</main>
+
+<footer>
+  Data: Transport for NSW Open Data. This is an unofficial personal tool — not affiliated with TfNSW.
+</footer>
+
+<script>
+const STOP_NAME = "Raglan St opp Esther Rd, Mosman";
+// TfNSW stop_id for this stop (GTFS). Verify/adjust if departures look wrong for your stop.
+let STOP_ID = "203516"; // best-effort match; user can override below if needed
+
+const els = {
+  workerurl: document.getElementById('workerurl'),
+  saveurl: document.getElementById('saveurl'),
+  refreshBtn: document.getElementById('refreshBtn'),
+  statusDot: document.getElementById('statusDot'),
+  statusText: document.getElementById('statusText'),
+  arrivals: document.getElementById('arrivals'),
+};
+
+let _workerUrl = '';
+function getWorkerUrl(){ return _workerUrl; }
+function setWorkerUrl(u){ _workerUrl = u; }
+
+els.saveurl.addEventListener('click', () => {
+  const val = els.workerurl.value.trim();
+  if(!val){
+    setStatus('err', 'Paste your Worker URL first');
+    return;
+  }
+  setWorkerUrl(val);
+  setStatus('idle', 'Worker URL saved — tap Refresh');
+  els.saveurl.textContent = 'Saved ✓';
+  setTimeout(() => { els.saveurl.textContent = 'Save'; }, 1500);
+});
+
+function setStatus(kind, text){
+  els.statusDot.className = 'dot' + (kind === 'stale' ? ' stale' : kind === 'err' ? ' err' : '');
+  els.statusText.textContent = text;
+}
+
+function fmtClock(date){
+  return date.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' });
+}
+
+function minutesUntil(date){
+  return Math.round((date - new Date()) / 60000);
+}
+
+async function fetchDepartures(){
+  const workerUrl = getWorkerUrl();
+  if(!workerUrl){
+    setStatus('err', 'No Worker URL set');
+    els.arrivals.innerHTML = '<div class="loading">Paste your Cloudflare Worker URL above and tap Save, then Refresh.</div>';
+    return;
+  }
+
+  setStatus('idle', 'Loading…');
+  els.arrivals.innerHTML = '<div class="loading">Fetching live departures…</div>';
+
+  const cleanBase = workerUrl.replace(/\/+$/, '');
+  const url = `${cleanBase}/?stopId=${encodeURIComponent(STOP_ID)}`;
+
+  try{
+    const resp = await fetch(url);
+
+    if(!resp.ok){
+      const bodyText = await resp.text().catch(() => '');
+      setStatus('err', `Error ${resp.status}`);
+      els.arrivals.innerHTML = `<div class="error-box">
+        Couldn't load departures (HTTP ${resp.status}) from your Worker.<br>
+        Check the Worker URL is correct and the TFNSW_API_KEY secret is set in Cloudflare.
+        <code>Requested: ${url}</code>
+        <code>${bodyText.slice(0,300).replace(/</g,'&lt;')}</code>
+      </div>`;
+      return;
+    }
+
+    const data = await resp.json();
+    renderDepartures(data);
+    setStatus('ok', 'Updated ' + fmtClock(new Date()));
+  }catch(err){
+    setStatus('err', 'Network error');
+    els.arrivals.innerHTML = `<div class="error-box">
+      Request to your Worker failed. Double check the URL is correct and the Worker is deployed.
+      <code>Requested: ${url}</code>
+      <code>${String(err).replace(/</g,'&lt;')}</code>
+    </div>`;
+  }
+}
+
+function renderDepartures(data){
+  const stopEvents = (data && data.stopEvents) || [];
+  if(stopEvents.length === 0){
+    els.arrivals.innerHTML = '<div class="empty">No upcoming departures returned for this stop right now.</div>';
+    return;
+  }
+
+  const rows = stopEvents.slice(0, 8).map(ev => {
+    const transportation = ev.transportation || {};
+    const lineNum = (transportation.number || transportation.disassembledName || '?').trim();
+    const dest = (transportation.destination && transportation.destination.name) || 'Unknown destination';
+
+    const planned = new Date(ev.departureTimePlanned);
+    const estimated = ev.departureTimeEstimated ? new Date(ev.departureTimeEstimated) : planned;
+    const mins = minutesUntil(estimated);
+
+    let cls = '';
+    if(mins <= 3) cls = 'imminent';
+    else if(mins <= 8) cls = 'soon';
+
+    const minsLabel = mins <= 0 ? 'Now' : `${mins} min`;
+
+    return `
+      <div class="arrival ${cls}">
+        <div class="route-block">
+          <div class="route-num">${lineNum}</div>
+          <div class="route-dest">
+            <span class="label">to</span>
+            ${dest}
+          </div>
+        </div>
+        <div class="eta">
+          <div class="mins">${minsLabel}</div>
+          <div class="clock">${fmtClock(estimated)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  els.arrivals.innerHTML = `<div class="arrivals">${rows}</div>`;
+}
+
+els.refreshBtn.addEventListener('click', fetchDepartures);
+
+
+</script>
+
+</body>
+</html>
