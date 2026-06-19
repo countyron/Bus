@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Raglan St Bus">
+<link rel="apple-touch-icon" href="icon.png">
 <title>Raglan St — Next Bus</title>
 <style>
   :root{
@@ -16,6 +20,11 @@
     --good:#1e7a4c;
     --warn:#b3461f;
     --card:#ffffff;
+    --sky-top:#7fc7d9;
+    --sea-mid:#1b8fa3;
+    --sea-deep:#0f5d6b;
+    --sand:#e9c98e;
+    --sun:#f6c453;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -27,11 +36,37 @@
     padding:0 0 40px;
   }
   header{
-    background:linear-gradient(160deg,var(--harbour) 0%,var(--harbour-deep) 100%);
+    position:relative;
+    background:linear-gradient(165deg, var(--sky-top) 0%, var(--sea-mid) 55%, var(--sea-deep) 100%);
     color:#eef5f3;
-    padding:28px 20px 22px;
-    border-bottom:3px solid var(--amber);
+    padding:30px 20px 36px;
+    overflow:hidden;
   }
+  header::before{
+    /* sun glow */
+    content:"";
+    position:absolute;
+    top:-30px;
+    right:-20px;
+    width:110px;
+    height:110px;
+    background:radial-gradient(circle, var(--sun) 0%, rgba(246,196,83,0) 70%);
+    opacity:.85;
+    border-radius:50%;
+  }
+  header::after{
+    /* wave bottom edge */
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:-1px;
+    height:18px;
+    background:var(--paper);
+    -webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20' preserveAspectRatio='none'><path d='M0 10 Q25 0 50 10 T100 10 T150 10 T200 10 V20 H0 Z' fill='black'/></svg>");
+    mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20' preserveAspectRatio='none'><path d='M0 10 Q25 0 50 10 T100 10 T150 10 T200 10 V20 H0 Z' fill='black'/></svg>");
+    -webkit-mask-size:100% 100%;
+    mask-size:100% 100%;
+  }
+  header .eyebrow, header h1, header .sub{ position:relative; z-index:1; }
   header .eyebrow{
     font-family:"Helvetica Neue",Arial,sans-serif;
     font-size:11px;
@@ -253,9 +288,9 @@
 <body>
 
 <header>
-  <p class="eyebrow">Mosman · Northern Beaches direction</p>
+  <p class="eyebrow">Mosman · away from Balmoral Beach</p>
   <h1>Raglan St opp Esther Rd</h1>
-  <p class="sub">Routes 100 · 114 · 238 — live departures</p>
+  <p class="sub">Routes 114 · 238 — live departures</p>
 </header>
 
 <main>
@@ -266,7 +301,7 @@
   </div>
 
   <div class="stop-banner">
-    Tracking <b>Raglan St opp Esther Rd</b>, Mosman — routes 100, 114, 238. The resolved stop name will appear in the status line after a successful refresh.
+    Tracking <b>Raglan St opp Esther Rd</b>, Mosman — routes 114 &amp; 238, heading away from Balmoral Beach only.
   </div>
 
   <div class="arrivals" id="arrivals">
@@ -372,9 +407,23 @@ function renderCandidates(candidates, resolved){
 }
 
 function renderDepartures(data){
-  const stopEvents = (data && data.stopEvents) || [];
+  const allEvents = (data && data.stopEvents) || [];
+
+  // Exclude route 100 entirely, and exclude services heading back toward Balmoral
+  // (we only want the direction heading away from Balmoral Beach).
+  const stopEvents = allEvents.filter(ev => {
+    const transportation = ev.transportation || {};
+    const lineNum = (transportation.number || transportation.disassembledName || '').trim();
+    if (lineNum === '100') return false;
+
+    const dest = ((transportation.destination && transportation.destination.name) || '').toLowerCase();
+    if (dest.includes('balmoral')) return false;
+
+    return true;
+  });
+
   if(stopEvents.length === 0){
-    els.arrivals.innerHTML = '<div class="empty">No upcoming departures returned for this stop right now.</div>';
+    els.arrivals.innerHTML = '<div class="empty">No upcoming departures (away from Balmoral) right now.</div>';
     return;
   }
 
