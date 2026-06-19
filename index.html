@@ -285,6 +285,8 @@
     <div class="loading">Add your API key above, then tap Refresh to load live departures.</div>
   </div>
 
+  <div id="candidates"></div>
+
 </main>
 
 <footer>
@@ -301,6 +303,7 @@ const els = {
   statusDot: document.getElementById('statusDot'),
   statusText: document.getElementById('statusText'),
   arrivals: document.getElementById('arrivals'),
+  candidates: document.getElementById('candidates'),
 };
 
 let _workerUrl = '';
@@ -365,6 +368,7 @@ async function fetchDepartures(){
     renderDepartures(data);
     const resolved = data._resolvedStop ? ' · ' + data._resolvedStop.name : '';
     setStatus('ok', 'Updated ' + fmtClock(new Date()) + resolved);
+    renderCandidates(data._allCandidates, data._resolvedStop);
   }catch(err){
     setStatus('err', 'Network error');
     els.arrivals.innerHTML = `<div class="error-box">
@@ -373,6 +377,24 @@ async function fetchDepartures(){
       <code>${String(err).replace(/</g,'&lt;')}</code>
     </div>`;
   }
+}
+
+function renderCandidates(candidates, resolved){
+  if(!candidates || candidates.length < 2){
+    els.candidates.innerHTML = '';
+    return;
+  }
+  const items = candidates.map(c => {
+    const isResolved = resolved && c.id === resolved.id;
+    return `<li style="margin-bottom:4px;${isResolved ? 'font-weight:700;color:#1b5c6b;' : ''}">${c.name}${isResolved ? ' ← showing this one' : ''}</li>`;
+  }).join('');
+  els.candidates.innerHTML = `
+    <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:#3c5566;background:#eee9da;border-radius:8px;padding:10px 14px;margin-top:14px;">
+      <strong>Other nearby stop matches found:</strong>
+      <ul style="margin:8px 0 0;padding-left:18px;">${items}</ul>
+      <span style="display:block;margin-top:6px;font-size:11px;">If the wrong one is showing, tell Claude which name matches your stop.</span>
+    </div>
+  `;
 }
 
 function renderDepartures(data){
