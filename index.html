@@ -260,18 +260,6 @@
 
 <main>
 
-  <div class="keycard" id="keycard">
-    <label for="workerurl">Worker proxy URL</label>
-    <div class="keyrow">
-      <input type="text" id="workerurl" placeholder="https://raglan-bus.yourname.workers.dev">
-      <button id="saveurl">Save</button>
-    </div>
-    <p class="keynote">
-      This is your Cloudflare Worker URL, set up to hold your TfNSW key securely server-side.
-      See the setup guide alongside this file if you haven't deployed the Worker yet.
-    </p>
-  </div>
-
   <div class="status-line">
     <span><span class="dot" id="statusDot"></span><span id="statusText">Not connected</span></span>
     <button id="refreshBtn">Refresh</button>
@@ -296,9 +284,9 @@
 <script>
 // Stop coordinates are baked into the Worker — no stop ID needed here.
 
+const WORKER_URL = "https://bustracker.countyron.workers.dev";
+
 const els = {
-  workerurl: document.getElementById('workerurl'),
-  saveurl: document.getElementById('saveurl'),
   refreshBtn: document.getElementById('refreshBtn'),
   statusDot: document.getElementById('statusDot'),
   statusText: document.getElementById('statusText'),
@@ -306,21 +294,7 @@ const els = {
   candidates: document.getElementById('candidates'),
 };
 
-let _workerUrl = '';
-function getWorkerUrl(){ return _workerUrl; }
-function setWorkerUrl(u){ _workerUrl = u; }
-
-els.saveurl.addEventListener('click', () => {
-  const val = els.workerurl.value.trim();
-  if(!val){
-    setStatus('err', 'Paste your Worker URL first');
-    return;
-  }
-  setWorkerUrl(val);
-  setStatus('idle', 'Worker URL saved — tap Refresh');
-  els.saveurl.textContent = 'Saved ✓';
-  setTimeout(() => { els.saveurl.textContent = 'Save'; }, 1500);
-});
+function getWorkerUrl(){ return WORKER_URL; }
 
 function setStatus(kind, text){
   els.statusDot.className = 'dot' + (kind === 'stale' ? ' stale' : kind === 'err' ? ' err' : '');
@@ -441,6 +415,7 @@ function renderDepartures(data){
 
 els.refreshBtn.addEventListener('click', fetchDepartures);
 
+fetchDepartures();
 
 </script>
 
