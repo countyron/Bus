@@ -278,7 +278,7 @@
   </div>
 
   <div class="stop-banner">
-    Tracking <b>Raglan St opp Esther Rd</b>, Mosman. If your stop ID differs slightly from the auto-match, set it manually below the results once you see what's loading.
+    Tracking <b>Raglan St opp Esther Rd</b>, Mosman — routes 100, 114, 238. The resolved stop name will appear in the status line after a successful refresh.
   </div>
 
   <div class="arrivals" id="arrivals">
@@ -292,9 +292,7 @@
 </footer>
 
 <script>
-const STOP_NAME = "Raglan St opp Esther Rd, Mosman";
-// TfNSW stop_id for this stop (GTFS). Verify/adjust if departures look wrong for your stop.
-let STOP_ID = "203516"; // best-effort match; user can override below if needed
+// Stop coordinates are baked into the Worker — no stop ID needed here.
 
 const els = {
   workerurl: document.getElementById('workerurl'),
@@ -346,7 +344,7 @@ async function fetchDepartures(){
   els.arrivals.innerHTML = '<div class="loading">Fetching live departures…</div>';
 
   const cleanBase = workerUrl.replace(/\/+$/, '');
-  const url = `${cleanBase}/?stopId=${encodeURIComponent(STOP_ID)}`;
+  const url = `${cleanBase}/`;
 
   try{
     const resp = await fetch(url);
@@ -365,7 +363,8 @@ async function fetchDepartures(){
 
     const data = await resp.json();
     renderDepartures(data);
-    setStatus('ok', 'Updated ' + fmtClock(new Date()));
+    const resolved = data._resolvedStop ? ' · ' + data._resolvedStop.name : '';
+    setStatus('ok', 'Updated ' + fmtClock(new Date()) + resolved);
   }catch(err){
     setStatus('err', 'Network error');
     els.arrivals.innerHTML = `<div class="error-box">
