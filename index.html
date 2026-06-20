@@ -254,6 +254,45 @@
     color:var(--ink-soft);
   }
 
+  .leave-banner{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:13px;
+    font-weight:600;
+    color:var(--harbour-deep);
+    background:#dff0ea;
+    border:1px solid #b9dccf;
+    border-radius:8px;
+    padding:10px 14px;
+    margin-bottom:12px;
+    text-align:center;
+  }
+  .leave-banner.urgent{
+    color:#fff;
+    background:var(--warn);
+    border-color:var(--warn);
+  }
+
+  .leave-tag{
+    display:block;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:10.5px;
+    color:var(--ink-soft);
+    margin-top:3px;
+  }
+
+  #pullIndicator{
+    text-align:center;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:12px;
+    color:var(--ink-soft);
+    height:0;
+    overflow:hidden;
+    transition:height .15s ease;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
   .empty, .loading, .error-box{
     font-family:"Helvetica Neue",Arial,sans-serif;
     text-align:center;
@@ -295,6 +334,8 @@
 
 <main>
 
+  <div id="pullIndicator">↓ Pull to refresh</div>
+
   <div class="status-line">
     <span><span class="dot" id="statusDot"></span><span id="statusText">Not connected</span></span>
     <button id="refreshBtn">Refresh</button>
@@ -329,6 +370,10 @@ const els = {
   candidates: document.getElementById('candidates'),
 };
 
+const WALK_MINUTES = 2;
+let _lastGoodData = null;
+let _lastGoodTime = null;
+
 function getWorkerUrl(){ return WORKER_URL; }
 
 function setStatus(kind, text){
@@ -353,7 +398,9 @@ async function fetchDepartures(){
   }
 
   setStatus('idle', 'Loading…');
-  els.arrivals.innerHTML = '<div class="loading">Fetching live departures…</div>';
+  if(!_lastGoodData){
+    els.arrivals.innerHTML = '<div class="loading">Fetching live departures…</div>';
+  }
 
   const cleanBase = workerUrl.replace(/\/+$/, '');
   const url = `${cleanBase}/`;
@@ -363,28 +410,40 @@ async function fetchDepartures(){
 
     if(!resp.ok){
       const bodyText = await resp.text().catch(() => '');
-      setStatus('err', `Error ${resp.status}`);
-      els.arrivals.innerHTML = `<div class="error-box">
+      handleFetchFailure(`Error ${resp.status}`, `
         Couldn't load departures (HTTP ${resp.status}) from your Worker.<br>
         Check the Worker URL is correct and the TFNSW_API_KEY secret is set in Cloudflare.
         <code>Requested: ${url}</code>
         <code>${bodyText.slice(0,300).replace(/</g,'&lt;')}</code>
-      </div>`;
+      `);
       return;
     }
 
     const data = await resp.json();
+    _lastGoodData = data;
+    _lastGoodTime = new Date();
+
     renderDepartures(data);
     const resolved = data._resolvedStop ? ' · ' + data._resolvedStop.name : '';
     setStatus('ok', 'Updated ' + fmtClock(new Date()) + resolved);
     renderCandidates(data._allCandidates, data._resolvedStop);
   }catch(err){
-    setStatus('err', 'Network error');
-    els.arrivals.innerHTML = `<div class="error-box">
+    handleFetchFailure('Network error', `
       Request to your Worker failed. Double check the URL is correct and the Worker is deployed.
       <code>Requested: ${url}</code>
       <code>${String(err).replace(/</g,'&lt;')}</code>
-    </div>`;
+    `);
+  }
+}
+
+function handleFetchFailure(statusText, errorHtml){
+  if(_lastGoodData){
+    // Show stale cached data rather than a dead end
+    renderDepartures(_lastGoodData);
+    setStatus('stale', `Showing data from ${fmtClock(_lastGoodTime)} (refresh failed)`);
+  } else {
+    setStatus('err', statusText);
+    els.arrivals.innerHTML = `<div class="error-box">${errorHtml}</div>`;
   }
 }
 
@@ -423,8 +482,23 @@ function renderDepartures(data){
   });
 
   if(stopEvents.length === 0){
-    els.arrivals.innerHTML = '<div class="empty">No upcoming departures (away from Balmoral) right now.</div>';
+    const hour = new Date().getHours();
+    const note = hour >= 16
+      ? 'No upcoming departures — route 238 typically finishes mid-afternoon, so this may just be 114 between trips.'
+      : 'No upcoming departures (away from Balmoral) right now.';
+    els.arrivals.innerHTML = `<div class="empty">${note}</div>`;
     return;
+  }
+
+  const soonestMins = minutesUntil(
+    stopEvents[0].departureTimeEstimated ? new Date(stopEvents[0].departureTimeEstimated) : new Date(stopEvents[0].departureTimePlanned)
+  );
+  const leaveInMins = soonestMins - WALK_MINUTES;
+  let leaveBanner = '';
+  if(leaveInMins <= 0){
+    leaveBanner = `<div class="leave-banner urgent">Leave now — ${WALK_MINUTES} min walk, next bus in ${soonestMins <= 0 ? 'now' : soonestMins + ' min'}</div>`;
+  } else {
+    leaveBanner = `<div class="leave-banner">Leave in ${leaveInMins} min for the next bus (${WALK_MINUTES} min walk)</div>`;
   }
 
   const rows = stopEvents.slice(0, 8).map(ev => {
@@ -435,12 +509,14 @@ function renderDepartures(data){
     const planned = new Date(ev.departureTimePlanned);
     const estimated = ev.departureTimeEstimated ? new Date(ev.departureTimeEstimated) : planned;
     const mins = minutesUntil(estimated);
+    const leaveBy = mins - WALK_MINUTES;
 
     let cls = '';
     if(mins <= 3) cls = 'imminent';
     else if(mins <= 8) cls = 'soon';
 
     const minsLabel = mins <= 0 ? 'Now' : `${mins} min`;
+    const leaveLabel = leaveBy <= 0 ? 'Leave now' : `Leave by ${fmtClock(new Date(Date.now() + leaveBy*60000))}`;
 
     return `
       <div class="arrival ${cls}">
@@ -449,6 +525,7 @@ function renderDepartures(data){
           <div class="route-dest">
             <span class="label">to</span>
             ${dest}
+            <span class="leave-tag">${leaveLabel}</span>
           </div>
         </div>
         <div class="eta">
@@ -459,14 +536,53 @@ function renderDepartures(data){
     `;
   }).join('');
 
-  els.arrivals.innerHTML = `<div class="arrivals">${rows}</div>`;
+  els.arrivals.innerHTML = `${leaveBanner}<div class="arrivals">${rows}</div>`;
 }
 
 els.refreshBtn.addEventListener('click', fetchDepartures);
 
 fetchDepartures();
 
+// Auto-refresh every 30 seconds
+setInterval(fetchDepartures, 30000);
+
+// Pull-to-refresh (simple touch-based, for when added to iOS home screen)
+(function(){
+  const pullEl = document.getElementById('pullIndicator');
+  let startY = null;
+  let pulling = false;
+
+  document.addEventListener('touchstart', (e) => {
+    if(window.scrollY === 0){
+      startY = e.touches[0].clientY;
+      pulling = true;
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if(!pulling || startY === null) return;
+    const delta = e.touches[0].clientY - startY;
+    if(delta > 0 && window.scrollY === 0){
+      const height = Math.min(delta * 0.5, 50);
+      pullEl.style.height = height + 'px';
+      pullEl.textContent = height > 40 ? '↑ Release to refresh' : '↓ Pull to refresh';
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    if(!pulling) return;
+    const height = parseInt(pullEl.style.height || '0', 10);
+    pullEl.style.height = '0px';
+    if(height > 40){
+      fetchDepartures();
+    }
+    pulling = false;
+    startY = null;
+  }, { passive: true });
+})();
+
 </script>
 
 </body>
 </html>
+
