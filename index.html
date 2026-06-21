@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Raglan St Bus">
+<meta name="apple-mobile-web-app-title" content="Next Bus">
 <link rel="apple-touch-icon" href="icon.png">
-<title>Raglan St — Next Bus</title>
+<title>Next Bus</title>
 
 <style>
   :root{
@@ -47,7 +47,10 @@
     position:relative;
     background:linear-gradient(165deg, var(--sky-top) 0%, var(--sea-mid) 55%, var(--sea-deep) 100%);
     color:#eef5f3;
-    padding:30px 20px 36px;
+    padding:
+      calc(30px + env(safe-area-inset-top))
+      20px
+      36px;
     overflow:hidden;
   }
 
@@ -369,8 +372,8 @@
   <div id="pullIndicator">↓ Pull to refresh</div>
 
   <div class="screen-tabs">
-    <button class="screen-tab active" data-screen="raglan">From Raglan St</button>
-    <button class="screen-tab" data-screen="bigbear">To Balmoral</button>
+    <button class="screen-tab active" data-screen="raglan">Home → City</button>
+    <button class="screen-tab" data-screen="bigbear">Big Bear → Balmoral</button>
   </div>
 
   <div class="status-line">
@@ -410,6 +413,7 @@ const SCREENS = {
     routes: ["114", "238"],
     excludeBalmoral: true,
     onlyBalmoral: false,
+    showLeaveBanner: true,
     emptyMessage: "No upcoming departures away from Balmoral right now."
   },
 
@@ -418,10 +422,11 @@ const SCREENS = {
     eyebrow: "Neutral Bay · to Balmoral Beach",
     title: "Big Bear Shopping Centre",
     sub: "Route 114 — next buses to Balmoral",
-    banner: "Tracking <b>Big Bear Shopping Centre, Military Rd</b> — route 114 buses heading to Balmoral only.",
+    banner: "Tracking <b>Big Bear Shopping Centre, Military Rd</b> — route 114 buses heading to Balmoral.",
     routes: ["114"],
     excludeBalmoral: false,
     onlyBalmoral: true,
+    showLeaveBanner: false,
     emptyMessage: "No upcoming 114 departures to Balmoral right now."
   }
 };
@@ -618,18 +623,20 @@ function renderDepartures(data){
 
   let leaveBanner = '';
 
-  if(leaveInMins <= 0){
-    leaveBanner = `
-      <div class="leave-banner urgent">
-        Leave now — ${WALK_MINUTES} min walk, next bus ${soonestMins <= 0 ? 'now' : 'in ' + soonestMins + ' min'}
-      </div>
-    `;
-  } else {
-    leaveBanner = `
-      <div class="leave-banner">
-        Leave in ${leaveInMins} min for the next bus (${WALK_MINUTES} min walk)
-      </div>
-    `;
+  if(screen.showLeaveBanner){
+    if(leaveInMins <= 0){
+      leaveBanner = `
+        <div class="leave-banner urgent">
+          Leave now — ${WALK_MINUTES} min walk, next bus ${soonestMins <= 0 ? 'now' : 'in ' + soonestMins + ' min'}
+        </div>
+      `;
+    } else {
+      leaveBanner = `
+        <div class="leave-banner">
+          Leave in ${leaveInMins} min for the next bus (${WALK_MINUTES} min walk)
+        </div>
+      `;
+    }
   }
 
   const rows = stopEvents.slice(0, 8).map(ev => {
@@ -670,7 +677,7 @@ function renderDepartures(data){
           <div class="route-dest">
             <span class="label">to</span>
             ${dest}
-            <span class="leave-tag">${leaveLabel}</span>
+            <span class="leave-tag">${screen.showLeaveBanner ? leaveLabel : ''}</span>
           </div>
         </div>
 
