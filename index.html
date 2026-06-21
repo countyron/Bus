@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Raglan St Bus">
 <link rel="apple-touch-icon" href="icon.png">
 <title>Raglan St — Next Bus</title>
+
 <style>
   :root{
     --ink:#0e2230;
@@ -26,8 +27,14 @@
     --sand:#e9c98e;
     --sun:#f6c453;
   }
+
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
+
+  html,body{
+    margin:0;
+    padding:0;
+  }
+
   body{
     background:var(--paper);
     color:var(--ink);
@@ -35,6 +42,7 @@
     min-height:100vh;
     padding:0 0 40px;
   }
+
   header{
     position:relative;
     background:linear-gradient(165deg, var(--sky-top) 0%, var(--sea-mid) 55%, var(--sea-deep) 100%);
@@ -42,8 +50,8 @@
     padding:30px 20px 36px;
     overflow:hidden;
   }
+
   header::before{
-    /* sun glow */
     content:"";
     position:absolute;
     top:-30px;
@@ -54,11 +62,13 @@
     opacity:.85;
     border-radius:50%;
   }
+
   header::after{
-    /* wave bottom edge */
     content:"";
     position:absolute;
-    left:0; right:0; bottom:-1px;
+    left:0;
+    right:0;
+    bottom:-1px;
     height:18px;
     background:var(--paper);
     -webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20' preserveAspectRatio='none'><path d='M0 10 Q25 0 50 10 T100 10 T150 10 T200 10 V20 H0 Z' fill='black'/></svg>");
@@ -66,7 +76,14 @@
     -webkit-mask-size:100% 100%;
     mask-size:100% 100%;
   }
-  header .eyebrow, header h1, header .sub{ position:relative; z-index:1; }
+
+  header .eyebrow,
+  header h1,
+  header .sub{
+    position:relative;
+    z-index:1;
+  }
+
   header .eyebrow{
     font-family:"Helvetica Neue",Arial,sans-serif;
     font-size:11px;
@@ -75,12 +92,14 @@
     opacity:.75;
     margin:0 0 6px;
   }
+
   header h1{
     margin:0;
     font-size:26px;
     font-weight:600;
     line-height:1.15;
   }
+
   header .sub{
     font-family:"Helvetica Neue",Arial,sans-serif;
     font-size:13px;
@@ -94,51 +113,31 @@
     padding:18px 16px 0;
   }
 
-  .keycard{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:14px 16px;
-    margin-bottom:18px;
+  .screen-tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-bottom:14px;
     font-family:"Helvetica Neue",Arial,sans-serif;
   }
-  .keycard label{
-    display:block;
-    font-size:11px;
-    letter-spacing:.08em;
-    text-transform:uppercase;
+
+  .screen-tab{
+    border:1px solid var(--line);
+    background:#eee9da;
     color:var(--ink-soft);
-    margin-bottom:6px;
-  }
-  .keyrow{display:flex;gap:8px;}
-  .keyrow input{
-    flex:1;
+    border-radius:999px;
     padding:10px 12px;
-    border:1px solid var(--line);
-    border-radius:7px;
-    font-size:14px;
-    font-family:"Helvetica Neue",Arial,sans-serif;
-    background:#fbfaf6;
-  }
-  .keyrow button{
-    padding:10px 16px;
-    border:none;
-    border-radius:7px;
-    background:var(--harbour);
-    color:#fff;
     font-size:13px;
     font-weight:600;
     cursor:pointer;
     font-family:"Helvetica Neue",Arial,sans-serif;
   }
-  .keyrow button:active{background:var(--harbour-deep);}
-  .keynote{
-    font-size:11.5px;
-    color:var(--ink-soft);
-    margin-top:8px;
-    line-height:1.4;
+
+  .screen-tab.active{
+    background:var(--harbour);
+    color:#fff;
+    border-color:var(--harbour);
   }
-  .keynote a{color:var(--harbour);}
 
   .status-line{
     display:flex;
@@ -150,6 +149,7 @@
     margin-bottom:10px;
     padding:0 2px;
   }
+
   .status-line button{
     background:none;
     border:1px solid var(--line);
@@ -160,15 +160,18 @@
     cursor:pointer;
     font-family:"Helvetica Neue",Arial,sans-serif;
   }
+
   .dot{
     display:inline-block;
-    width:7px;height:7px;
+    width:7px;
+    height:7px;
     border-radius:50%;
     background:var(--good);
     margin-right:6px;
     position:relative;
     top:-1px;
   }
+
   .dot.stale{background:var(--amber);}
   .dot.err{background:var(--warn);}
 
@@ -182,13 +185,17 @@
     margin-bottom:14px;
     line-height:1.45;
   }
-  .stop-banner b{color:var(--ink);}
+
+  .stop-banner b{
+    color:var(--ink);
+  }
 
   .arrivals{
     display:flex;
     flex-direction:column;
     gap:10px;
   }
+
   .arrival{
     background:var(--card);
     border:1px solid var(--line);
@@ -200,8 +207,14 @@
     justify-content:space-between;
     gap:12px;
   }
-  .arrival.imminent{border-left-color:var(--warn);}
-  .arrival.soon{border-left-color:var(--amber);}
+
+  .arrival.imminent{
+    border-left-color:var(--warn);
+  }
+
+  .arrival.soon{
+    border-left-color:var(--amber);
+  }
 
   .route-block{
     display:flex;
@@ -209,6 +222,7 @@
     gap:12px;
     min-width:0;
   }
+
   .route-num{
     font-family:"Helvetica Neue",Arial,sans-serif;
     font-weight:700;
@@ -221,11 +235,13 @@
     text-align:center;
     flex-shrink:0;
   }
+
   .route-dest{
     font-size:15px;
     line-height:1.25;
     min-width:0;
   }
+
   .route-dest .label{
     display:block;
     font-family:"Helvetica Neue",Arial,sans-serif;
@@ -240,14 +256,22 @@
     text-align:right;
     flex-shrink:0;
   }
+
   .eta .mins{
     font-family:"Helvetica Neue",Arial,sans-serif;
     font-weight:700;
     font-size:22px;
     color:var(--harbour-deep);
   }
-  .arrival.imminent .eta .mins{color:var(--warn);}
-  .arrival.soon .eta .mins{color:var(--amber);}
+
+  .arrival.imminent .eta .mins{
+    color:var(--warn);
+  }
+
+  .arrival.soon .eta .mins{
+    color:var(--amber);
+  }
+
   .eta .clock{
     font-family:"Helvetica Neue",Arial,sans-serif;
     font-size:11.5px;
@@ -266,6 +290,7 @@
     margin-bottom:12px;
     text-align:center;
   }
+
   .leave-banner.urgent{
     color:#fff;
     background:var(--warn);
@@ -293,7 +318,9 @@
     justify-content:center;
   }
 
-  .empty, .loading, .error-box{
+  .empty,
+  .loading,
+  .error-box{
     font-family:"Helvetica Neue",Arial,sans-serif;
     text-align:center;
     padding:34px 16px;
@@ -301,7 +328,11 @@
     font-size:14px;
     line-height:1.5;
   }
-  .error-box{color:var(--warn);}
+
+  .error-box{
+    color:var(--warn);
+  }
+
   .error-box code{
     display:block;
     margin-top:8px;
@@ -324,20 +355,29 @@
   }
 </style>
 </head>
+
 <body>
 
 <header>
-  <p class="eyebrow">Mosman · away from Balmoral Beach</p>
-  <h1>Raglan St opp Esther Rd</h1>
-  <p class="sub">Routes 114 · 238 — live departures</p>
+  <p class="eyebrow" id="screenEyebrow">Mosman · away from Balmoral Beach</p>
+  <h1 id="screenTitle">Raglan St opp Esther Rd</h1>
+  <p class="sub" id="screenSub">Routes 114 · 238 — live departures</p>
 </header>
 
 <main>
 
   <div id="pullIndicator">↓ Pull to refresh</div>
 
+  <div class="screen-tabs">
+    <button class="screen-tab active" data-screen="raglan">From Raglan St</button>
+    <button class="screen-tab" data-screen="bigbear">To Balmoral</button>
+  </div>
+
   <div class="status-line">
-    <span><span class="dot" id="statusDot"></span><span id="statusText">Not connected</span></span>
+    <span>
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">Not connected</span>
+    </span>
     <button id="refreshBtn">Refresh</button>
   </div>
 
@@ -346,7 +386,7 @@
   </div>
 
   <div class="arrivals" id="arrivals">
-    <div class="loading">Add your API key above, then tap Refresh to load live departures.</div>
+    <div class="loading">Loading live departures…</div>
   </div>
 
   <div id="candidates"></div>
@@ -358,9 +398,39 @@
 </footer>
 
 <script>
-// Stop coordinates are baked into the Worker — no stop ID needed here.
-
 const WORKER_URL = "https://bustracker.countyron.workers.dev";
+
+const SCREENS = {
+  raglan: {
+    endpoint: "/",
+    eyebrow: "Mosman · away from Balmoral Beach",
+    title: "Raglan St opp Esther Rd",
+    sub: "Routes 114 · 238 — live departures",
+    banner: "Tracking <b>Raglan St opp Esther Rd</b>, Mosman — routes 114 & 238, heading away from Balmoral Beach only.",
+    routes: ["114", "238"],
+    excludeBalmoral: true,
+    onlyBalmoral: false,
+    emptyMessage: "No upcoming departures away from Balmoral right now."
+  },
+
+  bigbear: {
+    endpoint: "/bigbear-balmoral",
+    eyebrow: "Neutral Bay · to Balmoral Beach",
+    title: "Big Bear Shopping Centre",
+    sub: "Route 114 — next buses to Balmoral",
+    banner: "Tracking <b>Big Bear Shopping Centre, Military Rd</b> — route 114 buses heading to Balmoral only.",
+    routes: ["114"],
+    excludeBalmoral: false,
+    onlyBalmoral: true,
+    emptyMessage: "No upcoming 114 departures to Balmoral right now."
+  }
+};
+
+const WALK_MINUTES = 2;
+
+let currentScreen = "raglan";
+let _lastGoodData = null;
+let _lastGoodTime = null;
 
 const els = {
   refreshBtn: document.getElementById('refreshBtn'),
@@ -368,21 +438,32 @@ const els = {
   statusText: document.getElementById('statusText'),
   arrivals: document.getElementById('arrivals'),
   candidates: document.getElementById('candidates'),
+  screenEyebrow: document.getElementById('screenEyebrow'),
+  screenTitle: document.getElementById('screenTitle'),
+  screenSub: document.getElementById('screenSub'),
+  stopBanner: document.querySelector('.stop-banner'),
+  screenTabs: document.querySelectorAll('.screen-tab')
 };
 
-const WALK_MINUTES = 2;
-let _lastGoodData = null;
-let _lastGoodTime = null;
-
-function getWorkerUrl(){ return WORKER_URL; }
+function getWorkerUrl(){
+  return WORKER_URL;
+}
 
 function setStatus(kind, text){
-  els.statusDot.className = 'dot' + (kind === 'stale' ? ' stale' : kind === 'err' ? ' err' : '');
+  els.statusDot.className = 'dot' + (
+    kind === 'stale' ? ' stale' :
+    kind === 'err' ? ' err' :
+    ''
+  );
+
   els.statusText.textContent = text;
 }
 
 function fmtClock(date){
-  return date.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' });
+  return date.toLocaleTimeString('en-AU', {
+    hour: 'numeric',
+    minute: '2-digit'
+  });
 }
 
 function minutesUntil(date){
@@ -391,56 +472,72 @@ function minutesUntil(date){
 
 async function fetchDepartures(){
   const workerUrl = getWorkerUrl();
+
   if(!workerUrl){
     setStatus('err', 'No Worker URL set');
-    els.arrivals.innerHTML = '<div class="loading">Paste your Cloudflare Worker URL above and tap Save, then Refresh.</div>';
+    els.arrivals.innerHTML = '<div class="loading">Worker URL is missing.</div>';
     return;
   }
 
+  const screen = SCREENS[currentScreen];
+
   setStatus('idle', 'Loading…');
+
   if(!_lastGoodData){
     els.arrivals.innerHTML = '<div class="loading">Fetching live departures…</div>';
   }
 
   const cleanBase = workerUrl.replace(/\/+$/, '');
-  const url = `${cleanBase}/`;
+  const endpoint = screen.endpoint;
+  const url = `${cleanBase}${endpoint}`;
 
   try{
     const resp = await fetch(url);
 
     if(!resp.ok){
       const bodyText = await resp.text().catch(() => '');
-      handleFetchFailure(`Error ${resp.status}`, `
-        Couldn't load departures (HTTP ${resp.status}) from your Worker.<br>
-        Check the Worker URL is correct and the TFNSW_API_KEY secret is set in Cloudflare.
-        <code>Requested: ${url}</code>
-        <code>${bodyText.slice(0,300).replace(/</g,'&lt;')}</code>
-      `);
+
+      handleFetchFailure(
+        `Error ${resp.status}`,
+        `
+          Couldn't load departures from your Worker.<br>
+          Check that the Worker endpoint exists and the TFNSW_API_KEY secret is set in Cloudflare.
+          <code>Requested: ${url}</code>
+          <code>${bodyText.slice(0,300).replace(/</g,'&lt;')}</code>
+        `
+      );
+
       return;
     }
 
     const data = await resp.json();
+
     _lastGoodData = data;
     _lastGoodTime = new Date();
 
     renderDepartures(data);
+
     const resolved = data._resolvedStop ? ' · ' + data._resolvedStop.name : '';
     setStatus('ok', 'Updated ' + fmtClock(new Date()) + resolved);
+
     renderCandidates(data._allCandidates, data._resolvedStop);
+
   }catch(err){
-    handleFetchFailure('Network error', `
-      Request to your Worker failed. Double check the URL is correct and the Worker is deployed.
-      <code>Requested: ${url}</code>
-      <code>${String(err).replace(/</g,'&lt;')}</code>
-    `);
+    handleFetchFailure(
+      'Network error',
+      `
+        Request to your Worker failed. Double check the URL is correct and the Worker is deployed.
+        <code>Requested: ${url}</code>
+        <code>${String(err).replace(/</g,'&lt;')}</code>
+      `
+    );
   }
 }
 
 function handleFetchFailure(statusText, errorHtml){
   if(_lastGoodData){
-    // Show stale cached data rather than a dead end
     renderDepartures(_lastGoodData);
-    setStatus('stale', `Showing data from ${fmtClock(_lastGoodTime)} (refresh failed)`);
+    setStatus('stale', `Showing data from ${fmtClock(_lastGoodTime)} — refresh failed`);
   } else {
     setStatus('err', statusText);
     els.arrivals.innerHTML = `<div class="error-box">${errorHtml}</div>`;
@@ -452,62 +549,108 @@ function renderCandidates(candidates, resolved){
     els.candidates.innerHTML = '';
     return;
   }
+
   const items = candidates.map(c => {
     const isResolved = resolved && c.id === resolved.id;
-    return `<li style="margin-bottom:4px;${isResolved ? 'font-weight:700;color:#1b5c6b;' : ''}">${c.name}${isResolved ? ' ← showing this one' : ''}</li>`;
+
+    return `
+      <li style="margin-bottom:4px;${isResolved ? 'font-weight:700;color:#1b5c6b;' : ''}">
+        ${c.name || 'Unknown stop'}${isResolved ? ' ← showing this one' : ''}
+        <span style="display:block;font-size:10.5px;color:#6b7b85;">${c.id || ''}</span>
+      </li>
+    `;
   }).join('');
+
   els.candidates.innerHTML = `
     <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:#3c5566;background:#eee9da;border-radius:8px;padding:10px 14px;margin-top:14px;">
-      <strong>Other nearby stop matches found:</strong>
+      <strong>Nearby stop matches found:</strong>
       <ul style="margin:8px 0 0;padding-left:18px;">${items}</ul>
-      <span style="display:block;margin-top:6px;font-size:11px;">If the wrong one is showing, tell Claude which name matches your stop.</span>
+      <span style="display:block;margin-top:6px;font-size:11px;">
+        If the wrong stop is showing, use the stop ID above to hard-code the correct stop in the Worker.
+      </span>
     </div>
   `;
 }
 
 function renderDepartures(data){
   const allEvents = (data && data.stopEvents) || [];
+  const screen = SCREENS[currentScreen];
 
-  // Exclude route 100 entirely, and exclude services heading back toward Balmoral
-  // (we only want the direction heading away from Balmoral Beach).
   const stopEvents = allEvents.filter(ev => {
     const transportation = ev.transportation || {};
-    const lineNum = (transportation.number || transportation.disassembledName || '').trim();
-    if (lineNum === '100') return false;
+    const lineNum = String(
+      transportation.number ||
+      transportation.disassembledName ||
+      ''
+    ).trim();
 
-    const dest = ((transportation.destination && transportation.destination.name) || '').toLowerCase();
-    if (dest.includes('balmoral')) return false;
+    if(!screen.routes.includes(lineNum)) return false;
+
+    const dest = String(
+      transportation.destination &&
+      transportation.destination.name ||
+      ''
+    ).toLowerCase();
+
+    if(screen.excludeBalmoral && dest.includes('balmoral')) return false;
+    if(screen.onlyBalmoral && !dest.includes('balmoral')) return false;
 
     return true;
   });
 
+  stopEvents.sort((a, b) => {
+    const aTime = new Date(a.departureTimeEstimated || a.departureTimePlanned);
+    const bTime = new Date(b.departureTimeEstimated || b.departureTimePlanned);
+    return aTime - bTime;
+  });
+
   if(stopEvents.length === 0){
-    const hour = new Date().getHours();
-    const note = hour >= 16
-      ? 'No upcoming departures — route 238 typically finishes mid-afternoon, so this may just be 114 between trips.'
-      : 'No upcoming departures (away from Balmoral) right now.';
-    els.arrivals.innerHTML = `<div class="empty">${note}</div>`;
+    els.arrivals.innerHTML = `<div class="empty">${screen.emptyMessage}</div>`;
     return;
   }
 
-  const soonestMins = minutesUntil(
-    stopEvents[0].departureTimeEstimated ? new Date(stopEvents[0].departureTimeEstimated) : new Date(stopEvents[0].departureTimePlanned)
-  );
+  const soonestTime = stopEvents[0].departureTimeEstimated
+    ? new Date(stopEvents[0].departureTimeEstimated)
+    : new Date(stopEvents[0].departureTimePlanned);
+
+  const soonestMins = minutesUntil(soonestTime);
   const leaveInMins = soonestMins - WALK_MINUTES;
+
   let leaveBanner = '';
+
   if(leaveInMins <= 0){
-    leaveBanner = `<div class="leave-banner urgent">Leave now — ${WALK_MINUTES} min walk, next bus in ${soonestMins <= 0 ? 'now' : soonestMins + ' min'}</div>`;
+    leaveBanner = `
+      <div class="leave-banner urgent">
+        Leave now — ${WALK_MINUTES} min walk, next bus ${soonestMins <= 0 ? 'now' : 'in ' + soonestMins + ' min'}
+      </div>
+    `;
   } else {
-    leaveBanner = `<div class="leave-banner">Leave in ${leaveInMins} min for the next bus (${WALK_MINUTES} min walk)</div>`;
+    leaveBanner = `
+      <div class="leave-banner">
+        Leave in ${leaveInMins} min for the next bus (${WALK_MINUTES} min walk)
+      </div>
+    `;
   }
 
   const rows = stopEvents.slice(0, 8).map(ev => {
     const transportation = ev.transportation || {};
-    const lineNum = (transportation.number || transportation.disassembledName || '?').trim();
-    const dest = (transportation.destination && transportation.destination.name) || 'Unknown destination';
+
+    const lineNum = String(
+      transportation.number ||
+      transportation.disassembledName ||
+      '?'
+    ).trim();
+
+    const dest = (
+      transportation.destination &&
+      transportation.destination.name
+    ) || 'Unknown destination';
 
     const planned = new Date(ev.departureTimePlanned);
-    const estimated = ev.departureTimeEstimated ? new Date(ev.departureTimeEstimated) : planned;
+    const estimated = ev.departureTimeEstimated
+      ? new Date(ev.departureTimeEstimated)
+      : planned;
+
     const mins = minutesUntil(estimated);
     const leaveBy = mins - WALK_MINUTES;
 
@@ -516,7 +659,9 @@ function renderDepartures(data){
     else if(mins <= 8) cls = 'soon';
 
     const minsLabel = mins <= 0 ? 'Now' : `${mins} min`;
-    const leaveLabel = leaveBy <= 0 ? 'Leave now' : `Leave by ${fmtClock(new Date(Date.now() + leaveBy*60000))}`;
+    const leaveLabel = leaveBy <= 0
+      ? 'Leave now'
+      : `Leave by ${fmtClock(new Date(Date.now() + leaveBy * 60000))}`;
 
     return `
       <div class="arrival ${cls}">
@@ -528,6 +673,7 @@ function renderDepartures(data){
             <span class="leave-tag">${leaveLabel}</span>
           </div>
         </div>
+
         <div class="eta">
           <div class="mins">${minsLabel}</div>
           <div class="clock">${fmtClock(estimated)}</div>
@@ -539,14 +685,42 @@ function renderDepartures(data){
   els.arrivals.innerHTML = `${leaveBanner}<div class="arrivals">${rows}</div>`;
 }
 
+function switchScreen(screenKey){
+  currentScreen = screenKey;
+
+  const screen = SCREENS[screenKey];
+
+  els.screenEyebrow.textContent = screen.eyebrow;
+  els.screenTitle.textContent = screen.title;
+  els.screenSub.textContent = screen.sub;
+  els.stopBanner.innerHTML = screen.banner;
+
+  els.screenTabs.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.screen === screenKey);
+  });
+
+  els.arrivals.innerHTML = '<div class="loading">Fetching live departures…</div>';
+  els.candidates.innerHTML = '';
+
+  _lastGoodData = null;
+  _lastGoodTime = null;
+
+  fetchDepartures();
+}
+
+els.screenTabs.forEach(btn => {
+  btn.addEventListener('click', () => {
+    switchScreen(btn.dataset.screen);
+  });
+});
+
 els.refreshBtn.addEventListener('click', fetchDepartures);
 
 fetchDepartures();
 
-// Auto-refresh every 30 seconds
 setInterval(fetchDepartures, 30000);
 
-// Pull-to-refresh (simple touch-based, for when added to iOS home screen)
+// Pull-to-refresh for iOS home screen use
 (function(){
   const pullEl = document.getElementById('pullIndicator');
   let startY = null;
@@ -561,7 +735,9 @@ setInterval(fetchDepartures, 30000);
 
   document.addEventListener('touchmove', (e) => {
     if(!pulling || startY === null) return;
+
     const delta = e.touches[0].clientY - startY;
+
     if(delta > 0 && window.scrollY === 0){
       const height = Math.min(delta * 0.5, 50);
       pullEl.style.height = height + 'px';
@@ -569,20 +745,21 @@ setInterval(fetchDepartures, 30000);
     }
   }, { passive: true });
 
-  document.addEventListener('touchend', (e) => {
+  document.addEventListener('touchend', () => {
     if(!pulling) return;
+
     const height = parseInt(pullEl.style.height || '0', 10);
     pullEl.style.height = '0px';
+
     if(height > 40){
       fetchDepartures();
     }
+
     pulling = false;
     startY = null;
   }, { passive: true });
 })();
-
 </script>
 
 </body>
 </html>
-
