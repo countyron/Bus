@@ -414,6 +414,8 @@ const SCREENS = {
     excludeBalmoral: true,
     onlyBalmoral: false,
     showLeaveBanner: true,
+    showLeaveTag: true,
+    showCandidates: true,
     emptyMessage: "No upcoming departures away from Balmoral right now."
   },
 
@@ -427,6 +429,8 @@ const SCREENS = {
     excludeBalmoral: false,
     onlyBalmoral: true,
     showLeaveBanner: false,
+    showLeaveTag: false,
+    showCandidates: false,
     emptyMessage: "No upcoming 114 departures to Balmoral right now."
   }
 };
@@ -550,6 +554,13 @@ function handleFetchFailure(statusText, errorHtml){
 }
 
 function renderCandidates(candidates, resolved){
+  const screen = SCREENS[currentScreen];
+
+  if(!screen.showCandidates){
+    els.candidates.innerHTML = '';
+    return;
+  }
+
   if(!candidates || candidates.length < 2){
     els.candidates.innerHTML = '';
     return;
@@ -677,7 +688,7 @@ function renderDepartures(data){
           <div class="route-dest">
             <span class="label">to</span>
             ${dest}
-            <span class="leave-tag">${screen.showLeaveBanner ? leaveLabel : ''}</span>
+            ${screen.showLeaveTag ? `<span class="leave-tag">${leaveLabel}</span>` : ''}
           </div>
         </div>
 
@@ -727,7 +738,6 @@ fetchDepartures();
 
 setInterval(fetchDepartures, 30000);
 
-// Pull-to-refresh for iOS home screen use
 (function(){
   const pullEl = document.getElementById('pullIndicator');
   let startY = null;
